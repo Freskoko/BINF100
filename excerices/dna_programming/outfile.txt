@@ -1,0 +1,2 @@
+Mismatch found at index 18: seq1: T, seq2: G 
+Mismatch found at index 35: seq1: C, seq2: T 
