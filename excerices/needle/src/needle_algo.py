@@ -62,7 +62,7 @@ def find_backtrack(i: int, j: int, A1: str, A2: str, k: int, table: list[list]):
     # start low right corner, find highest score, keep going.
 
     # if reached top right STOP
-    if (i > 0) or (j > 0):
+    if (i > 0) and (j > 0):
 
         print(f"recursion : {k} | A1 = {A1}, A2 = {A2} | i,j = {i},{j}")
 

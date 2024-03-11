@@ -1,24 +1,29 @@
 from pathlib import Path
 
-# constants
+# Constants
 GAP_PENALTY = -2
 MATCH = 1
 MISMATCH = -1
 
-# local alignment
+# Local alignment
 INITIAL_GAP_PENALTY = 0
 
-# num of align with highest score
-ALIGNMENT_COUNTER = 0
-
+# ----------------------------------
 SEQ1 = "AAAGCTCCGATCTCG" 
 SEQ2 = "TAAAGCAATTTTGGTTTTTTTCCGA"
-#MISSING: #TCCGA #TCCGA
 
-# SEQ1 = Path("src/resources/DNA_A_California_2009_pandemicH1N1_segment7.txt").read_text().replace('\n', '')
-# SEQ2 = Path("src/resources/DNA_A_Brisbane_2007_H1N1_M2_CDS.txt").read_text().replace('\n', '')
-# EXPECTED ONE!!! 206  (294, 994)
+# Found two optimal alignments: 
+# Score 5, indexes: 6,5     | CGAAA
+# Score 5, indexes: 25,10   | AGCCT
 
+# ----------------------------------
+SEQ1 = "".join(Path("src/resources/DNA_A_California_2009_pandemicH1N1_segment7.txt").read_text().split("\n")[1:])
+SEQ2 = "".join(Path("src/resources/DNA_A_Brisbane_2007_H1N1_M2_CDS.txt").read_text().split("\n")[1:])
+
+# Found one optimal alignment:
+# Score 206, indexes: 294,994
+
+ALL_ALIGNMENTS = []
 
 def create_table(SEQ1: str, SEQ2: str) -> list[list[int]]:
     """
@@ -114,25 +119,35 @@ def prettyprint_alignments(a1: str, a2: str) -> None:
     Returns:
         None
     """
-
+    blocks = 40
     build_middle_str = ""
-    for index, (char_a, char_b) in enumerate(zip(a1, a2)):
-        if char_a == char_b:
-            build_middle_str += "|"
-        else:
-            build_middle_str += " "
 
-        if (index + 1) % 20 == 0 or index == len(a1)-1:
-            if index+1 % 20 == 0:
-                segment_index = 20
+    # full block size, remainder size
+    full_blocks = len(a1) // blocks
+    remainder = len(a1) % blocks
+
+    for block_index in range(full_blocks + 1):
+
+        start = block_index * blocks
+
+        if block_index == full_blocks:  # last one not full
+            end = start + remainder
+        else:  # full block
+            end = start + blocks
+
+        for char_a, char_b in zip(a1[start:end], a2[start:end]):
+            # create middle alignment segment
+            if char_a == char_b:
+                build_middle_str += "|"
             else:
-                segment_index = len(a1) % 20
+                build_middle_str += " "
 
-            first_line = len(f"SEQ1: {index+2-segment_index}")
-            print(f"SEQ1: {index+2-segment_index} {a1[index+1-segment_index:index+1]} {index+1}")
-            print(f"{' '*first_line} {build_middle_str[index+1-segment_index:index+1]}")
-            print(f"SEQ2: {index+2-segment_index} {a2[index+1-segment_index:index+1]} {index+1}")
-            print("\n")
+        first_line = len(f"SEQ1: {start} ")
+        print(f"SEQ1: {start} {a1[start:end]} {end}")
+        print(f"{' '*first_line}{build_middle_str}")
+        print(f"SEQ2: {start} {a2[start:end]} {end}")
+        print("\n")
+        build_middle_str = ""
 
 
 def prettyprint_score(a1: str, a2: str) -> None:
@@ -173,6 +188,7 @@ def get_max_score_indices(table: list[list[int]]) -> list[tuple[int,int]]:
 
     return max_indices, max_score
 
+
 def find_best_alignment(i: int, j: int, a1: str, a2: str, table: list[list], seq1: str, seq2: str) -> int:
     """
     Recursively finds the best alignment score between two sequences.
@@ -184,21 +200,18 @@ def find_best_alignment(i: int, j: int, a1: str, a2: str, table: list[list], seq
         A2 (str): The partial alignment of sequence 2.
         table (list[list]): The scoring table.
 
-    Returns:
+    Returns:    
         int: The best alignment score.
 
     """
-    global ALIGNMENT_COUNTER
+    global ALL_ALIGNMENTS
 
     if (i > 0) and (j > 0):
 
         if table[i][j] == 0:
-            score,_,_ = alignment_score(a1[::-1], a2[::-1])
-            prettyprint_alignments(a1[::-1], a1[::-1])
-            prettyprint_score(a1[::-1], a2[::-1])
-            ALIGNMENT_COUNTER+=1
-            return score
-
+            ALL_ALIGNMENTS.append( (a1[::-1],a2[::-1]) ) 
+            return
+            
         match_score = MATCH if seq1[j - 1] == seq2[i - 1] else MISMATCH
 
         # check diag
@@ -216,12 +229,8 @@ def find_best_alignment(i: int, j: int, a1: str, a2: str, table: list[list], seq
             return find_best_alignment(i, j - 1, a1 + seq1[j - 1], a2 + "-", table, seq1, seq2)
 
     else:
-        score,_,_ = alignment_score(a1[::-1], a2[::-1])
-        prettyprint_alignments(a1[::-1], a1[::-1])
-        prettyprint_score(a1[::-1], a2[::-1])
-        ALIGNMENT_COUNTER+=1
-        return score
-    
+        ALL_ALIGNMENTS.append( (a1[::-1],a2[::-1]) )
+        return
 
 if __name__ == "__main__":
 
@@ -242,9 +251,17 @@ if __name__ == "__main__":
         find_best_alignment(
             i,j, "", "", table, SEQ1, SEQ2
         )
-        
+
+    #print good alignments
+    for alignment in ALL_ALIGNMENTS:
+        a1,a2 = alignment
+        score,_,_ = alignment_score(a1[::-1], a2[::-1])
+        prettyprint_alignments(a1[::-1], a1[::-1])
+        prettyprint_score(a1[::-1], a2[::-1])
+
     print("------------------------------")
-    print(f"\nAmount of alignments found with score {max_score_found} = {ALIGNMENT_COUNTER}")
+    print(f"\nAmount of alignments found with score {max_score_found} = {len(ALL_ALIGNMENTS)}")
+
 
 
 # todo fix first line in files
