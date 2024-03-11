@@ -51,8 +51,8 @@ SEQ1 = "AAAGCTCCGATCTCG"
 SEQ2 = "TAAAGCAATTTTGGTTTTTTTCCGA"
 
 # ----------------------------------
-SEQ1 = "".join(Path(YOUR_FILE_SEQ_1).read_text().split("\n")[1:])
-SEQ2 = "".join(Path(YOUR_FILE_SEQ_2).read_text().split("\n")[1:])
+# SEQ1 = "".join(Path(YOUR_FILE_SEQ_1).read_text().split("\n")[1:])
+# SEQ2 = "".join(Path(YOUR_FILE_SEQ_2).read_text().split("\n")[1:])
 
 
 def create_table(SEQ1: str, SEQ2: str) -> list[list[int]]:
@@ -278,9 +278,8 @@ if __name__ == "__main__":
     # find incides of table with highest score
     max_score_indices, max_score_found = get_max_score_indices(table)
 
-    print("POSSIBLE OPTIMAL ALIGNMENTS: \n")
+    print("\nOPTIMAL ALIGNMENTS: \n")
     for max_score_index in max_score_indices:
-        print("------------------- ALIGNMENT FOUND: -------------------")
 
         i, j = max_score_index
 
@@ -290,6 +289,7 @@ if __name__ == "__main__":
 
     # print good alignments
     for alignment in ALL_ALIGNMENTS:
+        print("------------------- ALIGNMENT FOUND: ------------------- \n")
         a1, a2 = alignment
         score, _, _ = alignment_stats(a1[::-1], a2[::-1])
         prettyprint_alignments(a1[::-1], a1[::-1])
@@ -297,5 +297,5 @@ if __name__ == "__main__":
 
     print("------------------------------")
     print(
-        f"\nAmount of alignments found with score {max_score_found} = {len(ALL_ALIGNMENTS)}"
+        f"\nAmount of alignments found with score {max_score_found} = {len(ALL_ALIGNMENTS)} \n"
     )
