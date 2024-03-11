@@ -47,12 +47,12 @@ YOUR_FILE_SEQ_1 = "src/resources/DNA_A_California_2009_pandemicH1N1_segment7.txt
 YOUR_FILE_SEQ_2 = "src/resources/DNA_A_Brisbane_2007_H1N1_M2_CDS.txt"
 
 # ----------------------------------
-SEQ1 = "AAAGCTCCGATCTCG"
-SEQ2 = "TAAAGCAATTTTGGTTTTTTTCCGA"
+# SEQ1 = "AAAGCTCCGATCTCG"
+# SEQ2 = "TAAAGCAATTTTGGTTTTTTTCCGA"
 
 # ----------------------------------
-# SEQ1 = "".join(Path(YOUR_FILE_SEQ_1).read_text().split("\n")[1:])
-# SEQ2 = "".join(Path(YOUR_FILE_SEQ_2).read_text().split("\n")[1:])
+SEQ1 = "".join(Path(YOUR_FILE_SEQ_1).read_text().split("\n")[1:])
+SEQ2 = "".join(Path(YOUR_FILE_SEQ_2).read_text().split("\n")[1:])
 
 
 def create_table(SEQ1: str, SEQ2: str) -> list[list[int]]:
@@ -137,21 +137,22 @@ def alignment_stats(align1: str, align2: str) -> tuple[int, int, int]:
     return score, matches, gaps
 
 
-def prettyprint_alignments(a1: str, a2: str) -> None:
+def prettyprint_alignments(a1: str, a2: str, start_seq1: int, start_seq2: int) -> None:
     """
     Pretty prints the alignments of two sequences.
 
     Args:
         a1 (str): The first aligned sequence.
         a2 (str): The second aligned sequence.
+        start_seq1 (int): Starting index of a1 in original sequence
+        start_seq2 (int): Starting index of a2 in original sequence
 
     Returns:
         None
     """
-    blocks = 40
+    blocks = 20
     build_middle_str = ""
 
-    # full block size, remainder size
     full_blocks = len(a1) // blocks
     remainder = len(a1) % blocks
 
@@ -160,35 +161,33 @@ def prettyprint_alignments(a1: str, a2: str) -> None:
 
         if block_index == full_blocks:  # last one not full
             end = start + remainder
+            end_len = remainder
         else:  # full block
             end = start + blocks
+            end_len = blocks
 
         for char_a, char_b in zip(a1[start:end], a2[start:end]):
-            # create middle alignment segment
             if char_a == char_b:
                 build_middle_str += "|"
             else:
                 build_middle_str += " "
 
-        first_line = len(f"SEQ1: {start} ")
-        print(f"SEQ1: {start} {a1[start:end]} {end}")
-        print(f"{' '*first_line}{build_middle_str}")
-        print(f"SEQ2: {start} {a2[start:end]} {end}")
+        seq1_prefix = f"SEQ1: {start_seq1 + start}"
+        seq2_prefix = f"SEQ2: {start_seq2 + start}"
+
+        offset = max(len(seq1_prefix), len(seq2_prefix))
+
+        print(
+            seq1_prefix.ljust(offset)
+            + f" {a1[start:end]} {start_seq1 + start + end_len}"
+        )
+        print("".ljust(offset) + " " + build_middle_str)
+        print(
+            seq2_prefix.ljust(offset)
+            + f" {a2[start:end]} {start_seq2 + start + end_len}"
+        )
         print("\n")
         build_middle_str = ""
-
-
-def prettyprint_score(a1: str, a2: str) -> None:
-    score, matches, gaps = alignment_stats(a1, a2)
-    mismatches = len(a1) - matches
-
-    match_percent = round((matches / len(a1)) * 100, 2)
-    mismatch_percent = round((mismatches / len(a1)) * 100, 2)
-    gaps_percent = round((gaps / len(a1)) * 100, 2)
-
-    print(
-        f"Sequence identity: {matches}/{len(a1)} ({match_percent}%) Mismatches: {mismatches}/{len(a1)} ({mismatch_percent}%) Gaps {gaps}/{len(a1)} ({gaps_percent}%) \n"
-    )
 
 
 def get_max_score_indices(table: list[list[int]]) -> tuple[list[tuple[int, int]], int]:
@@ -216,6 +215,19 @@ def get_max_score_indices(table: list[list[int]]) -> tuple[list[tuple[int, int]]
                 max_indices.append((i, j))
 
     return max_indices, max_score
+
+
+def prettyprint_score(a1: str, a2: str) -> None:
+    score, matches, gaps = alignment_stats(a1, a2)
+    mismatches = len(a1) - matches
+
+    match_percent = round((matches / len(a1)) * 100, 2)
+    mismatch_percent = round((mismatches / len(a1)) * 100, 2)
+    gaps_percent = round((gaps / len(a1)) * 100, 2)
+
+    print(
+        f"Sequence identity: {matches}/{len(a1)} ({match_percent}%) Mismatches: {mismatches}/{len(a1)} ({mismatch_percent}%) Gaps {gaps}/{len(a1)} ({gaps_percent}%) \n"
+    )
 
 
 def find_best_alignment(
@@ -274,27 +286,21 @@ def find_best_alignment(
 
 if __name__ == "__main__":
     table = create_table(SEQ1, SEQ2)
-
-    # find incides of table with highest score
     max_score_indices, max_score_found = get_max_score_indices(table)
-
     print("\nOPTIMAL ALIGNMENTS: \n")
     for max_score_index in max_score_indices:
-
         i, j = max_score_index
-
         print(f"Indexes with max score ({max_score_found}) {i},{j}) \n")
-
         find_best_alignment(i, j, "", "", table, SEQ1, SEQ2)
 
-    # print good alignments
-    for alignment in ALL_ALIGNMENTS:
+    for alignment, startseq in zip(ALL_ALIGNMENTS, max_score_indices):
         print("------------------- ALIGNMENT FOUND: ------------------- \n")
-        a1, a2 = alignment
-        score, _, _ = alignment_stats(a1[::-1], a2[::-1])
-        prettyprint_alignments(a1[::-1], a1[::-1])
-        prettyprint_score(a1[::-1], a2[::-1])
 
+        a1, a2 = alignment
+        seq2_start, seq1_start = startseq
+
+        prettyprint_alignments(a1[::-1], a2[::-1], seq1_start, seq2_start)
+        prettyprint_score(a1[::-1], a2[::-1])
     print("------------------------------")
     print(
         f"\nAmount of alignments found with score {max_score_found} = {len(ALL_ALIGNMENTS)} \n"
