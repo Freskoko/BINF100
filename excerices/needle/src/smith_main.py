@@ -205,13 +205,11 @@ def find_best_alignment(i: int, j: int, A1: str, A2: str, table: list[list]) -> 
 
 if __name__ == "__main__":
 
-    # SEQ1 = "AAAGCTCCGATCTCG"
-    # SEQ2 = "TAAAGCAATTTTGGTTTTTTTCCGA"
-    # SEQ1 = "AAAGCTCCGATCTCG"
-    # SEQ2 = "TAAAGCAATTTTGGTTTTTTTCCGA"
+    SEQ1 = "AAAGCTCCGATCTCG"
+    SEQ2 = "TAAAGCAATTTTGGTTTTTTTCCGA"
 
-    SEQ1 = Path("resources/DNA_A_California_2009_pandemicH1N1_segment7.txt").read_text().replace('\n', '')
-    SEQ2 = Path("resources/DNA_A_Brisbane_2007_H1N1_M2_CDS.txt").read_text().replace('\n', '')
+    # SEQ1 = Path("resources/DNA_A_California_2009_pandemicH1N1_segment7.txt").read_text().replace('\n', '')
+    # SEQ2 = Path("resources/DNA_A_Brisbane_2007_H1N1_M2_CDS.txt").read_text().replace('\n', '')
 
     table = create_table(SEQ1, SEQ2)
 
