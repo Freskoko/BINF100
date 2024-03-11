@@ -10,7 +10,6 @@ SEQ2 = "CGCA"
 
 
 def create_table(SEQ1: str, SEQ2: str):
-
     # empty table
     table = [[None for _ in range(len(SEQ1) + 1)] for _ in range(len(SEQ2) + 1)]
 
@@ -28,7 +27,6 @@ def create_table(SEQ1: str, SEQ2: str):
     # loop through table
     for row_index in range(1, len(table)):
         for col_index in range(1, len(table[0])):
-
             seq1_base = SEQ1[col_index - 1]
             seq2_base = SEQ2[row_index - 1]
 
@@ -63,7 +61,6 @@ def find_backtrack(i: int, j: int, A1: str, A2: str, k: int, table: list[list]):
 
     # if reached top right STOP
     if (i > 0) and (j > 0):
-
         print(f"recursion : {k} | A1 = {A1}, A2 = {A2} | i,j = {i},{j}")
 
         # check above
@@ -93,7 +90,6 @@ def find_backtrack(i: int, j: int, A1: str, A2: str, k: int, table: list[list]):
                 )
             )
         ):  # check for diag if mismatch and score mismatch
-
             A1mod = A1 + SEQ1[j - 1]
             A2mod = A2 + SEQ2[i - 1]
             find_backtrack(i - 1, j - 1, A1mod, A2mod, k + 1, table)
