@@ -63,9 +63,9 @@ def create_table(SEQ1: str, SEQ2: str) -> list[list[int]]:
 
             table[row_index][col_index] = max(ABOVE_SCORE, LEFT_SCORE, DIAG_SCORE)
 
-    print(table)
-    for i in table:
-        print(i)
+    # print(table)
+    # for i in table:
+    #     print(i)
 
     return table
 
@@ -132,8 +132,8 @@ def find_all_possible_alignments(
             )
 
     else:
-        alignment_score_current = alignment_score(A1, A2)
-        if alignment_score_current == max_score:
+        alignment_score_current = alignment_score(A1[::-1], A2[::-1])
+        if alignment_score_current >= max_score:
             print(
                 f"Alignment: Score: {alignment_score_current} {A1[::-1]} | {A2[::-1]}"
             )
@@ -181,6 +181,7 @@ def find_best_alignment(i: int, j: int, A1: str, A2: str, table: list[list]) -> 
 
     """
     if (i > 0) and (j > 0):
+        print("finding alingment...")
         match_score = MATCH if SEQ1[j - 1] == SEQ2[i - 1] else MISMATCH
 
         # check above
@@ -197,16 +198,20 @@ def find_best_alignment(i: int, j: int, A1: str, A2: str, table: list[list]) -> 
                 i - 1, j - 1, A1 + SEQ1[j - 1], A2 + SEQ2[i - 1], table
             )
     else:
-        return alignment_score(A1, A2)
+        score = alignment_score(A1[::-1], A2[::-1])
+        print(f"BEST Alignment: Score: {score} {A1[::-1]} | {A2[::-1]}")
+        return score
 
 
 if __name__ == "__main__":
 
     # SEQ1 = "AAAGCTCCGATCTCG"
     # SEQ2 = "TAAAGCAATTTTGGTTTTTTTCCGA"
+    # SEQ1 = "AAAGCTCCGATCTCG"
+    # SEQ2 = "TAAAGCAATTTTGGTTTTTTTCCGA"
 
-    SEQ1 = Path("src/resources/DNA_A_California_2009_pandemicH1N1_segment7.txt").read_text().replace('\n', '')
-    SEQ2 = Path("src/resources/DNA_A_Brisbane_2007_H1N1_M2_CDS.txt").read_text().replace('\n', '')
+    SEQ1 = Path("resources/DNA_A_California_2009_pandemicH1N1_segment7.txt").read_text().replace('\n', '')
+    SEQ2 = Path("resources/DNA_A_Brisbane_2007_H1N1_M2_CDS.txt").read_text().replace('\n', '')
 
     table = create_table(SEQ1, SEQ2)
 
@@ -219,4 +224,9 @@ if __name__ == "__main__":
     for max_i, max_j in max_score_indices:
         find_all_possible_alignments(max_i, max_j, A1, A2, table, best_alignment_score)
 
-    print(ALIGNMENT_COUNTER)
+    # look through entire table
+    # for i in range(len(table)):
+    #     for j in range(len(table[0])):
+    #         find_all_possible_alignments(i, j, A1, A2, table, best_alignment_score)
+
+    print(f"Amount of alignments found with score {max_score} = {ALIGNMENT_COUNTER}")
