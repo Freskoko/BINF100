@@ -1,3 +1,34 @@
+"""
+# BINF100 LAB 1
+
+## 1. (7 points) Test your program with the following sample sequences and see if it can find all matches
+
+### a. Example sequences
+
+    AAAGCTCCGATCTCG and TAAAGCAATTTTGGTTTTTTTCCGA
+
+**Found two optimal alignments:**
+
+Score 5, indexes: 6,5     | CGAAA
+
+Score 5, indexes: 25,10   | AGCCT
+
+### b. Real life sequences
+
+    The segment 7 sequence for the 2009 H1N1 pandemic influenza virus
+    (DNA_A_California_2009_pandemicH1N1_segment7.txt) and the coding
+    region of the M2 gene from the Brisbane seasonal strain
+    (DNA_A_Brisbane_2007_H1N1_M2_CDS.txt), both available from mittUiB
+
+**Found one optimal alignment:**
+
+Score 206, indexes: 294,994
+
+### Other questions
+
+Part 2 and 3 can be seen by running the code.
+"""
+
 from pathlib import Path
 
 # Constants
@@ -8,30 +39,20 @@ MISMATCH = -1
 # Local alignment
 INITIAL_GAP_PENALTY = 0
 
+# Global alignments
+ALL_ALIGNMENTS = []
+
+# REPLACE THIS WITH YOUR FILE PATH TO THE FILES
+YOUR_FILE_SEQ_1 = "src/resources/DNA_A_California_2009_pandemicH1N1_segment7.txt"
+YOUR_FILE_SEQ_2 = "src/resources/DNA_A_Brisbane_2007_H1N1_M2_CDS.txt"
+
 # ----------------------------------
 SEQ1 = "AAAGCTCCGATCTCG"
 SEQ2 = "TAAAGCAATTTTGGTTTTTTTCCGA"
 
-# Found two optimal alignments:
-# Score 5, indexes: 6,5     | CGAAA
-# Score 5, indexes: 25,10   | AGCCT
-
 # ----------------------------------
-SEQ1 = "".join(
-    Path("src/resources/DNA_A_California_2009_pandemicH1N1_segment7.txt")
-    .read_text()
-    .split("\n")[1:]
-)
-SEQ2 = "".join(
-    Path("src/resources/DNA_A_Brisbane_2007_H1N1_M2_CDS.txt")
-    .read_text()
-    .split("\n")[1:]
-)
-
-# Found one optimal alignment:
-# Score 206, indexes: 294,994
-
-ALL_ALIGNMENTS = []
+SEQ1 = "".join(Path(YOUR_FILE_SEQ_1).read_text().split("\n")[1:])
+SEQ2 = "".join(Path(YOUR_FILE_SEQ_2).read_text().split("\n")[1:])
 
 
 def create_table(SEQ1: str, SEQ2: str) -> list[list[int]]:
