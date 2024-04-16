@@ -66,11 +66,11 @@ e) (2 points) Based on a significance level alpha=0.01, give answers to question
 
 SEQ1A:
 
-P VALUE OF 0.06, ALPHA = 0.01
-P VALUE OF 0.06 OBSERVED, SEQUENCES ARE NOT HOMOLOGOUS
+P VALUE OF 0.02826141, ALPHA = 0.01
+P VALUE OF 0.02826141 OBSERVED, SEQUENCES ARE NOT HOMOLOGOUS
 
 P values observed are of course affected by the random sequences, 
-but seemed to stay around 0.055
+but seemed to stay around 0.028
 
 No, these sequences are not homologous
 
@@ -78,17 +78,18 @@ No, these sequences are not homologous
 
 SEQ1B:
 
-P VALUE OF 0.004, ALPHA = 0.01
-P VALUE OF 0.004 OBSERVED, SEQUENCES ARE HOMOLOGOUS
+P VALUE OF 0.00261057, ALPHA = 0.01
+P VALUE OF 0.00261057 OBSERVED, SEQUENCES ARE HOMOLOGOUS
 
 P values observed are of course affected by the random sequences, 
-but seemed to stay around 0.004
+but seemed to stay around 0.0026
 
 Yes, these sequences are homologous
 
 """
 
 import random
+import numpy as np
 
 # I just put in a seed so that its reproducable
 random.seed("BINF100 IS FUN :)")
@@ -384,6 +385,23 @@ def generate_n_random_sequences(n: int,string_inp: str) -> list[str]:
 
     return rand_sequences
 
+def find_p_val(all_random_values: list, maxscore: float) -> float:
+    """
+    Calculate p-value
+    """
+    
+    random_values_mean = sum(all_random_values)/len(all_random_values)
+
+    # Calculate lambda and mu
+    gumbel_scale_90th = 1.282
+    lambda_ = gumbel_scale_90th / np.std(all_random_values, ddof=1)
+
+    gumbel_variance = 0.577
+    mu = random_values_mean - gumbel_variance / lambda_
+    p_value = 1 - np.exp(-np.exp(-lambda_ * (maxscore - mu)))
+
+    return p_value
+
 if __name__ == "__main__":
     ALPHA = 0.01
 
@@ -403,34 +421,33 @@ if __name__ == "__main__":
 
     #c) (2 points) Compute the optimal scores for aligning each of the 1000 random sequences with
     # seq1a or seq1b, respectively. 
-    score_dict = {}
+    score_list = []
     for rand_seq in random_seq2_sequences:
         # i know i dont need to do the full alignment, but this works 
         score = full_waterman_process(SEQ1,rand_seq)
-        score_dict[rand_seq] = score
+        score_list.append(score)
 
     #d) (2 points) Estimate the p-value of the original score from a) based on the statistics of scores
     #from c).
 
-    # count how many reach max score
-    # HMM UNSURE ABOUT THIS PART !!! 
-    matching_max_count = len([k for k in score_dict if score_dict[k] >= max_score])
-    print(f"AMOUNT MATCHING OR ABOVE MAX COUNT : {matching_max_count}")
-    random_matching_max = matching_max_count / 1000
+    p_value = round(find_p_val(score_list,max_score),8)
+    
+    print(f"P VALUE : {p_value}")
 
-    #e) (2 points) Based on a significance level alpha=0.01, give answers to questions 1. and 2. from above
-    print(f"P VALUE OF {random_matching_max}, ALPHA = {ALPHA}")
-    print(f"P VALUE OF {random_matching_max} OBSERVED, SEQUENCES ARE {'NOT ' if random_matching_max>ALPHA else ''}HOMOLOGOUS")
+    # #e) (2 points) Based on a significance level alpha=0.01, give answers to questions 1. and 2. from above
+    
+    print(f"P VALUE OF {p_value}, ALPHA = {ALPHA}")
+    print(f"P VALUE OF {p_value} OBSERVED, SEQUENCES ARE {'NOT ' if p_value>ALPHA else ''}HOMOLOGOUS")
     
     # SEQ1A:
 
-    # P VALUE OF 0.06, ALPHA = 0.01
-    # P VALUE OF 0.06 OBSERVED, SEQUENCES ARE NOT HOMOLOGOUS
+    # P VALUE OF 0.02826141, ALPHA = 0.01
+    # P VALUE OF 0.02826141 OBSERVED, SEQUENCES ARE NOT HOMOLOGOUS
 
     # SEQ1B:
 
-    # P VALUE OF 0.004, ALPHA = 0.01
-    # P VALUE OF 0.004 OBSERVED, SEQUENCES ARE HOMOLOGOUS
+    # P VALUE OF 0.00261057, ALPHA = 0.01
+    # P VALUE OF 0.00261057 OBSERVED, SEQUENCES ARE HOMOLOGOUS
 
 
 
