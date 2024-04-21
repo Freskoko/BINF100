@@ -10,9 +10,9 @@ Indexes with max score (6) 12,6)
 
 ------------------- ALIGNMENT FOUND: ------------------- 
 
-SEQ1: 6  TTTTAA 12
+SEQ1: 6  AATTTT 12
          ||||||
-SEQ2: 12 TTTTAA 18
+SEQ2: 12 AATTTT 18
 
 
 Sequence identity: 6/6 (100.0%) Mismatches: 0/6 (0.0%) Gaps 0/6 (0.0%) 
@@ -29,9 +29,9 @@ Indexes with max score (8) 12,8)
 
 ------------------- ALIGNMENT FOUND: ------------------- 
 
-SEQ1: 8  TTTTAACG 16
+SEQ1: 8  GCAATTTT 16
          ||||||||
-SEQ2: 12 TTTTAACG 20
+SEQ2: 12 GCAATTTT 20
 
 
 Sequence identity: 8/8 (100.0%) Mismatches: 0/8 (0.0%) Gaps 0/8 (0.0%) 
@@ -197,6 +197,10 @@ def prettyprint_alignments(a1: str, a2: str, start_seq1: int, start_seq2: int) -
     Returns:
         None
     """
+
+    a1 = a1[::-1]
+    a2 = a2[::-1]
+
     blocks = 20
     build_middle_str = ""
 
@@ -314,13 +318,13 @@ def find_best_alignment(
             )
 
         # check above
-        elif i > 0 and table[i][j] == table[i - 1][j] + GAP_PENALTY:
+        if i > 0 and table[i][j] == table[i - 1][j] + GAP_PENALTY:
             return find_best_alignment(
                 i - 1, j, a1 + "-", a2 + seq2[i - 1], table, seq1, seq2
             )
 
         # check left
-        elif j > 0 and table[i][j] == table[i][j - 1] + GAP_PENALTY:
+        if j > 0 and table[i][j] == table[i][j - 1] + GAP_PENALTY:
             return find_best_alignment(
                 i, j - 1, a1 + seq1[j - 1], a2 + "-", table, seq1, seq2
             )
@@ -385,20 +389,23 @@ def generate_n_random_sequences(n: int,string_inp: str) -> list[str]:
 
     return rand_sequences
 
-def find_p_val(all_random_values: list, maxscore: float) -> float:
+def find_p_val_gumbel(all_random_values: list, maxscore: float) -> float:
     """
-    Calculate p-value
+    Calculate p-value 
+
+    Link to gumbel powerpoint slide:
+    https://mitt.uib.no/courses/45631/files/5761731?module_item_id=525804
     """
     
     random_values_mean = sum(all_random_values)/len(all_random_values)
 
     # Calculate lambda and mu
     gumbel_scale_90th = 1.282
-    lambda_ = gumbel_scale_90th / np.std(all_random_values, ddof=1)
+    λ = gumbel_scale_90th / np.std(all_random_values, ddof=1)
 
     gumbel_variance = 0.577
-    mu = random_values_mean - gumbel_variance / lambda_
-    p_value = 1 - np.exp(-np.exp(-lambda_ * (maxscore - mu)))
+    mu = random_values_mean - gumbel_variance / λ
+    p_value = 1 - np.exp(-np.exp(-λ * (maxscore - mu)))
 
     return p_value
 
@@ -409,7 +416,7 @@ if __name__ == "__main__":
     SEQ1B="GCAATTTT"
     SEQ2="TAAAGCAATTTTGGTTTTTTTCCGA"
 
-    SEQ1 = SEQ1B
+    SEQ1 = SEQ1A
     SEQ2 = SEQ2
     
     #a) (2 points) Compute the optimal local alignment score for the sequence pair by using
@@ -430,7 +437,7 @@ if __name__ == "__main__":
     #d) (2 points) Estimate the p-value of the original score from a) based on the statistics of scores
     #from c).
 
-    p_value = round(find_p_val(score_list,max_score),8)
+    p_value = round(find_p_val_gumbel(score_list,max_score),8)
     
     print(f"P VALUE : {p_value}")
 
