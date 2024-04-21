@@ -395,19 +395,20 @@ def find_p_val_gumbel(all_random_values: list, maxscore: float) -> float:
 
     Link to gumbel powerpoint slide:
     https://mitt.uib.no/courses/45631/files/5761731?module_item_id=525804
+
+    Got help from Hermann Holstad Walaunet here for figuring out an error
+    in the calculations
     """
     
     random_values_mean = sum(all_random_values)/len(all_random_values)
 
-    # Calculate lambda and mu
-    gumbel_scale_90th = 1.282
-    λ = gumbel_scale_90th / np.std(all_random_values, ddof=1)
+    # 1.282 z-score for 90th percentile
+    λ = 1.282 / np.std(all_random_values, ddof=1)
 
-    gumbel_variance = 0.577
-    mu = random_values_mean - gumbel_variance / λ
-    p_value = 1 - np.exp(-np.exp(-λ * (maxscore - mu)))
+    # 0.577 used to find location parameter for the gumbel distribution
+    mu = random_values_mean - 0.577 / λ
 
-    return p_value
+    return 1 - np.exp(-np.exp(-λ * (maxscore - mu)))
 
 if __name__ == "__main__":
     ALPHA = 0.01
